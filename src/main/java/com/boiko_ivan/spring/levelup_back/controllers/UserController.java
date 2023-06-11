@@ -1,11 +1,7 @@
 package com.boiko_ivan.spring.levelup_back.controllers;
 
-import com.boiko_ivan.spring.levelup_back.auth.AuthenticationRequest;
-import com.boiko_ivan.spring.levelup_back.auth.AuthenticationResponse;
-import com.boiko_ivan.spring.levelup_back.auth.RefreshJwtRequest;
 import com.boiko_ivan.spring.levelup_back.entity.User;
 import com.boiko_ivan.spring.levelup_back.services.UserService;
-import jakarta.security.auth.message.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +14,20 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody User user) {
-        return ResponseEntity.ok(userService.register(user));
+    @PostMapping("/auth/registration")
+    public ResponseEntity<Boolean> registration(@RequestBody User user) {
+        try {
+            userService.registration(user);
+            return ResponseEntity.ok(true);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(false);
+        }
     }
 
-    @PostMapping("/auth/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(userService.authenticate(request));
+    @PostMapping("/auth/google")
+    public ResponseEntity<User> googleAuthorization(@RequestBody User user) {
+        return ResponseEntity.ok(userService.googleAuthorization(user));
     }
 
     @GetMapping("/")
@@ -51,18 +53,6 @@ public class UserController {
     @GetMapping("/user_by_email/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.findByEmail(email).orElseThrow());
-    }
-
-    @PostMapping("/auth/new_access")
-    public ResponseEntity<AuthenticationResponse> getNewAccessToken(@RequestBody RefreshJwtRequest request) {
-        AuthenticationResponse token = userService.getAccessToken(request.getRefreshToken());
-        return ResponseEntity.ok(token);
-    }
-
-    @PostMapping("/auth/new_refresh")
-    public ResponseEntity<AuthenticationResponse> getNewRefreshToken(@RequestBody RefreshJwtRequest request) throws AuthException {
-        AuthenticationResponse token = userService.refresh(request.getRefreshToken());
-        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/test")
