@@ -17,11 +17,12 @@ import java.util.List;
 public class HomeWork {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
 
-    @Column(name = "type")
     private String type;
+
+    @Column(name = "expanded_task_text")
+    private String expandedTaskText;
 
     @OneToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_home_work")

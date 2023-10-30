@@ -15,15 +15,16 @@ import lombok.NoArgsConstructor;
 public class FileInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
 
-    @Column(name = "key")
+    @Column(name = "file_key")
     private String key;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "permanent_url")
+    private String permanentURL;
 
-    @Column(name = "type")
-    private String type;
+    public FileInfo(String key) {
+        this.key = key;
+    }
+
 }

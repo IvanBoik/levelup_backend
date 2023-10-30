@@ -8,17 +8,18 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "answer_options")
-public class AnswerOption {
+@Table(name = "chat_rooms")
+public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "is_right")
-    private boolean isRight;
+    @Column(name = "id_teacher")
+    private long teacherID;
 
-    private String text;
+    @Column(name = "id_student")
+    private long studentID;
 }

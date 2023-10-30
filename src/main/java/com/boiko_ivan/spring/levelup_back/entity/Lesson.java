@@ -13,21 +13,22 @@ import lombok.*;
 public class Lesson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
 
-    @Column(name = "duration")
+    private String title;
+
+    @Column(name = "id_course")
+    private long courseID;
+
     private long duration;
 
-    @Column(name = "introduction")
     private String introduction;
 
-    @Column(name = "description")
     private String description;
 
     @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "id_file")
-    private FileInfo fileInfo;
+    @JoinColumn(name = "id_video")
+    private FileInfo video;
 
     @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "id_home_work")

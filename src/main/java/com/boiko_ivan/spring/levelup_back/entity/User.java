@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -16,59 +17,58 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
 
-    @Column(name = "surname")
     private String surname;
 
-    @Column(name = "name")
     private String name;
 
-    @Column(name = "email")
     private String email;
 
-    @Column(name = "password")
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "id_avatar_file")
     private FileInfo avatarFile;
 
-    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "articles_likes", joinColumns = @JoinColumn(name = "id_user"),
-            inverseJoinColumns = @JoinColumn(name = "id_article"))
-    private List<Article> likedArticles = new ArrayList<>();
-
-    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "completions", joinColumns = @JoinColumn(name = "id_user"),
             inverseJoinColumns = @JoinColumn(name = "id_course"))
     private List<Course> educationalCourses = new ArrayList<>();
 
-    public void addLikedArticle(Article article) {
-        likedArticles.add(article);
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities () {
+        return List.of(role);
     }
 
-    public void removeLikedArticle(Article article) {
-        likedArticles.remove(article);
+    @Override
+    public String getUsername() {
+        return email;
     }
 
-    public void removeLikedArticle(int id) {
-        likedArticles.remove(id);
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public void addEducationalCourse(Course course) {
-        educationalCourses.add(course);
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void removeEducationalCourse(Course course) {
-        educationalCourses.remove(course);
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public void removeEducationalCourse(int id) {
-        educationalCourses.remove(id);
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

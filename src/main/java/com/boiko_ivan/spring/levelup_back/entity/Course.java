@@ -3,7 +3,7 @@ package com.boiko_ivan.spring.levelup_back.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,48 +16,36 @@ import java.util.List;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
 
-    @Column(name = "title")
-    private String title;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "price")
-    private double price;
-
-    @Column(name = "date_of_create")
-    private LocalDate dateOfCreate;
-
-    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "id_picture")
-    private FileInfo pictureFileInfo;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "difficulty")
-    private CourseDifficulty difficulty;
-
-    @Column(name = "topic")
-    private String topic;
-
-    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_author")
     private User author;
 
-    @OneToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_course")
-    private List<Lesson> lessons = new ArrayList<>();
+    private String title;
 
-    @Column(name = "completions")
+    private String description;
+
+    private double price;
+
+    @Column(name = "date_of_create")
+    private LocalDateTime dateOfCreate;
+
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "id_picture")
+    private FileInfo picture;
+
+    private String difficulty;
+
+    private String topic;
+
     private long completions;
 
-    public void addLesson(Lesson lesson) {
-        lessons.add(lesson);
-    }
+    @Column(name = "is_ready")
+    private boolean isReady;
 
-    public void removeLesson(Lesson lesson) {
-        lessons.remove(lesson);
-    }
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(name = "future_works", joinColumns = @JoinColumn(name = "id_course"),
+            inverseJoinColumns = @JoinColumn(name = "id"))
+    private List<FileInfo> futureWorks = new ArrayList<>();
 }
