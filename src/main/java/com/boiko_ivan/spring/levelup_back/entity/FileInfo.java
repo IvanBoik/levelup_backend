@@ -23,8 +23,15 @@ public class FileInfo {
     @Column(name = "permanent_url")
     private String permanentURL;
 
-    public FileInfo(String key) {
-        this.key = key;
+    public static FileInfo initWithKey(String key) {
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.setKey(key);
+        return fileInfo;
     }
 
+    public static FileInfo initWithPermanentURL(String url) {
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.setPermanentURL(url);
+        return fileInfo;
+    }
 }

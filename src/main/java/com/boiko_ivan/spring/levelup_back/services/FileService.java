@@ -2,10 +2,10 @@ package com.boiko_ivan.spring.levelup_back.services;
 
 import com.amazonaws.SdkClientException;
 import com.boiko_ivan.spring.levelup_back.entity.FileInfo;
-import com.boiko_ivan.spring.levelup_back.entity.HashedURL;
+import com.boiko_ivan.spring.levelup_back.entity.CashedURL;
 import com.boiko_ivan.spring.levelup_back.exceptions.EntityNotFoundException;
 import com.boiko_ivan.spring.levelup_back.repositories.FileInfoRepository;
-import com.boiko_ivan.spring.levelup_back.repositories.HashedURLRepository;
+import com.boiko_ivan.spring.levelup_back.repositories.CashedURLRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FileService {
     private final S3Service s3Service;
-    private final HashedURLRepository hashedURLRepository;
+    private final CashedURLRepository cashedURLRepository;
     private final FileInfoRepository fileInfoRepository;
 
     @Transactional(rollbackOn = RuntimeException.class)
@@ -27,11 +27,11 @@ public class FileService {
             s3Service.delete(key);
             fileInfo.setPermanentURL(null);
             String url = s3Service.uploadAndGetURL(file, key);
-            HashedURL hashedURL = hashedURLRepository.findById(key)
-                    .orElse(new HashedURL(key));
-            hashedURL.setUrl(url);
-            hashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
-            hashedURLRepository.save(hashedURL);
+            CashedURL cashedURL = cashedURLRepository.findById(key)
+                    .orElse(new CashedURL(key));
+            cashedURL.setUrl(url);
+            cashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
+            cashedURLRepository.save(cashedURL);
             fileInfoRepository.save(fileInfo);
         }
         catch (SdkClientException e) {
@@ -42,32 +42,32 @@ public class FileService {
     public FileInfo saveFile(byte[] file) {
         String key = s3Service.generateKey();
         String url = s3Service.uploadAndGetURL(file, key);
-        FileInfo newVideoFileInfo = new FileInfo(key);
-        HashedURL hashedURL = HashedURL.builder()
+        FileInfo newVideoFileInfo = FileInfo.initWithKey(key);
+        CashedURL cashedURL = CashedURL.builder()
                 .key(key)
                 .url(url)
                 .expiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION))
                 .build();
-        hashedURLRepository.save(hashedURL);
+        cashedURLRepository.save(cashedURL);
         return newVideoFileInfo;
     }
 
     public String getURL(FileInfo fileInfo) {
         if (fileInfo != null && fileInfo.getKey() != null) {
-            Optional<HashedURL> optionalHashedURL = hashedURLRepository.findById(fileInfo.getKey());
+            Optional<CashedURL> optionalHashedURL = cashedURLRepository.findById(fileInfo.getKey());
             if (optionalHashedURL.isEmpty()) {
                 return null;
             }
-            HashedURL hashedURL = optionalHashedURL.get();
-            if (hashedURL.getExpiration().before(new Date())) {
+            CashedURL cashedURL = optionalHashedURL.get();
+            if (cashedURL.getExpiration().before(new Date())) {
                 String url = s3Service.getURL(fileInfo.getKey());
-                hashedURL.setUrl(url);
-                hashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
-                hashedURLRepository.save(hashedURL);
+                cashedURL.setUrl(url);
+                cashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
+                cashedURLRepository.save(cashedURL);
                 return url;
             }
             else {
-                return hashedURL.getUrl();
+                return cashedURL.getUrl();
             }
         }
 
@@ -81,7 +81,7 @@ public class FileService {
                         new EntityNotFoundException("FileInfo with id = %d is not found".formatted(id))
                 );
 
-        hashedURLRepository.deleteById(fileInfo.getKey());
+        cashedURLRepository.deleteById(fileInfo.getKey());
         s3Service.delete(fileInfo.getKey());
         fileInfoRepository.delete(fileInfo);
     }

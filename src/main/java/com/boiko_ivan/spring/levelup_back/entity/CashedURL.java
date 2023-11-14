@@ -14,13 +14,13 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HashedURL {
+public class CashedURL {
     @Id
     private String key;
     private String url;
     private Date expiration;
 
-    public HashedURL(String key) {
+    public CashedURL(String key) {
         this.key = key;
     }
 }
