@@ -36,7 +36,6 @@ public class AuthService {
     private final UserDTOMapper userDTOMapper;
     private final MailSenderService mailSenderService;
 
-
     public JwtResponse signIn(SignInRequest request) {
         authenticateAndSetToContext(request.email(), request.password());
 

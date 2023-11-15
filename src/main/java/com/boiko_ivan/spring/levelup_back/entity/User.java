@@ -37,10 +37,10 @@ public class User implements UserDetails {
     @JoinColumn(name = "id_avatar_file")
     private FileInfo avatarFile;
 
-    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinTable(name = "completions", joinColumns = @JoinColumn(name = "id_user"),
-            inverseJoinColumns = @JoinColumn(name = "id_course"))
-    private List<Course> educationalCourses = new ArrayList<>();
+//    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+//    @JoinTable(name = "completions", joinColumns = @JoinColumn(name = "id_user"),
+//            inverseJoinColumns = @JoinColumn(name = "id_course"))
+//    private List<Course> educationalCourses = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities () {
@@ -70,5 +70,12 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public User(String name, String surname, String email, String password) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
     }
 }

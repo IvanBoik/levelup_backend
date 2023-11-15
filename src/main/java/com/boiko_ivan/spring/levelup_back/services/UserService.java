@@ -23,7 +23,7 @@ public class UserService {
     private final PasswordEncoder encoder;
 
     @Value("${default.user-avatar}")
-    private final String defaultAvatarKey;
+    private String defaultAvatarKey;
 
     public UserDTO updateUserData(UpdateUserDataRequest request) {
         User userFromDB = findUserByID(request.id());
@@ -39,12 +39,12 @@ public class UserService {
     public UserDTO updateUserAvatar(long userID, byte[] avatar) {
         User user = findUserByID(userID);
         FileInfo fileInfo = user.getAvatarFile();
-        if (fileInfo != null && fileInfo.getKey() != null) {
-            fIleService.updateFile(avatar, fileInfo);
-        }
-        else {
+        if (fileInfo.getKey() == null) {
             FileInfo newFileInfo = fIleService.saveFile(avatar);
             user.setAvatarFile(newFileInfo);
+        }
+        else {
+            fIleService.updateFile(avatar, fileInfo);
         }
 
         return userDTOMapper.apply(

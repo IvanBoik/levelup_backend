@@ -20,23 +20,22 @@ public class FileService {
     private final CashedURLRepository cashedURLRepository;
     private final FileInfoRepository fileInfoRepository;
 
-    @Transactional(rollbackOn = RuntimeException.class)
+    @Transactional(rollbackOn = SdkClientException.class)
     public void updateFile(byte[] file, FileInfo fileInfo) {
-        try {
-            String key = fileInfo.getKey();
-            s3Service.delete(key);
-            fileInfo.setPermanentURL(null);
-            String url = s3Service.uploadAndGetURL(file, key);
-            CashedURL cashedURL = cashedURLRepository.findById(key)
-                    .orElse(new CashedURL(key));
-            cashedURL.setUrl(url);
-            cashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
-            cashedURLRepository.save(cashedURL);
-            fileInfoRepository.save(fileInfo);
-        }
-        catch (SdkClientException e) {
-            throw new RuntimeException("Error with S3", e);
-        }
+        String key = fileInfo.getKey();
+        s3Service.delete(key);
+        fileInfo.setPermanentURL(null);
+        String url = s3Service.uploadAndGetURL(file, key);
+        CashedURL cashedURL = cashedURLRepository.findById(key)
+                .orElse(new CashedURL(key));
+        cashedURL.setUrl(url);
+        cashedURL.setExpiration(createExpiration());
+        cashedURLRepository.save(cashedURL);
+        fileInfoRepository.save(fileInfo);
+    }
+
+    private Date createExpiration() {
+        return new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION);
     }
 
     public FileInfo saveFile(byte[] file) {
@@ -46,14 +45,14 @@ public class FileService {
         CashedURL cashedURL = CashedURL.builder()
                 .key(key)
                 .url(url)
-                .expiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION))
+                .expiration(createExpiration())
                 .build();
         cashedURLRepository.save(cashedURL);
         return newVideoFileInfo;
     }
 
     public String getURL(FileInfo fileInfo) {
-        if (fileInfo != null && fileInfo.getKey() != null) {
+        if (fileInfo.getKey() != null) {
             Optional<CashedURL> optionalHashedURL = cashedURLRepository.findById(fileInfo.getKey());
             if (optionalHashedURL.isEmpty()) {
                 return null;
@@ -62,7 +61,7 @@ public class FileService {
             if (cashedURL.getExpiration().before(new Date())) {
                 String url = s3Service.getURL(fileInfo.getKey());
                 cashedURL.setUrl(url);
-                cashedURL.setExpiration(new Date(System.currentTimeMillis() + S3Service.URL_EXPIRATION));
+                cashedURL.setExpiration(createExpiration());
                 cashedURLRepository.save(cashedURL);
                 return url;
             }
